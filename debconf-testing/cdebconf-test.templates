@@ -1,0 +1,11 @@
+Template: foo/bar
+Type: string
+Default: foo
+Description: This is a sample string question.
+ This is its extended description.
+
+Template: foo/my_question
+Type: boolean
+Default: false
+Description: Just a template.
+ And it has a long long story.
