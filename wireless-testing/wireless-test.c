@@ -26,20 +26,27 @@ int main()
 
     printf("%d\n", ret);
 
-    wireless_scan *it;
+    wireless_scan *it, *old;
 
     if (context->result == NULL) {
         printf("mumu\n");
     }
 
     /* And this works :X */
-    for (it = context->result; it; it = it->next) {
+    for (it = context->result; it;) {
         printf("%d\n", it->has_ap_addr);
         printf("%d\n", it->b.has_essid);
         printf("%s\n", it->b.essid);
 
         printf("\n");
+
+        old = it;
+        it = it->next;
+
+        free(old);
     }
+
+    free(context);
 
     return 0;
 }
