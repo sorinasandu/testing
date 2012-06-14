@@ -1,0 +1,12 @@
+
+Template: netcfg/wireless_essid_offer_to_scan
+Type: boolean
+Description: Scan ${iface}?
+ ${iface} is a wireless network interface. Would you like to scan ${iface} for
+ available networks or to enter the name (the ESSID) manually?
+
+Template: netcfg/wireless_show_essids
+Type: select
+Choices: ${essid_list}
+Description: Select wireless network
+ Select desired network name (ESSID) to attempt to connect.

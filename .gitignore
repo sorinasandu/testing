@@ -2,3 +2,5 @@
 wireless-test
 cdebconf-test
 *\.dat
+\.*\.swp
+\.*\.swo
