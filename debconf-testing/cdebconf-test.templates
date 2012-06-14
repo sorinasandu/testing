@@ -9,3 +9,10 @@ Type: boolean
 Default: false
 Description: Just a template.
  And it has a long long story.
+
+Template: foo/choice
+Type: select
+Choices: Something, Some other thing, Some other other thing, ${choices}
+Description: Just stuff
+ It's so much stuff in here...
+

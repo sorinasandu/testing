@@ -8,4 +8,4 @@ clean:
 
 run: build
 #	 DEBCONF_DEBUG=developer debconf ./cdebconf-test
-	/usr/lib/cdebconf/debconf -fgtk ./cdebconf-test
+	DEBCONF_DEBUG=developer /usr/lib/cdebconf/debconf -fgtk ./cdebconf-test

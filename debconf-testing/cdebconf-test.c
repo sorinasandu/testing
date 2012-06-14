@@ -17,6 +17,13 @@ int main(int argc, char **argv)
 
     debconf_get(client, "foo/bar");
 
+    /* Something with multiple choise. */
+    debconf_reset(client, "foo/choice");
+    debconf_subst(client, "foo/choice", "choices", "Whatever, Something more");
+    debconf_input(client, "high", "foo/choice");
+    debconf_go(client);
+
+    debconf_get(client, "foo/choice");
 
 and_again:
     /* Setting the value for foo/bar. */
