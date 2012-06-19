@@ -54,10 +54,9 @@ and_it_all_begins:
         if (iw_process_scan(sockfd, iface, iw_get_kernel_we_version(),
                     &network_list) >= 0 ) {
 
-            wireless_scan *network;
+            wireless_scan *network, *old;
 
-            for (network = network_list.result; network; network =
-                    network->next) {
+            for (network = network_list.result; network; ) {
 
                 /* And we have one essid. */
                 fprintf(f, "%s\n", network->b.essid);
@@ -67,6 +66,11 @@ and_it_all_begins:
                 if (network->next) {
                     strcat(buffer, ", ");
                 }
+
+                old = network;
+                network = network->next;
+
+                free(old);
             }
 
             /* Print ALL the essids :) */
