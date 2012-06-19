@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 
     /* Showing the question the first time. */
     debconf_reset(client, "foo/bar");  /* ask every time */
-    debconf_input(client, "high", "foo/bar");
+    debconf_input(client, "low", "foo/bar");
     debconf_go(client);
 
     debconf_get(client, "foo/bar");

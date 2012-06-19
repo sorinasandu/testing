@@ -4,3 +4,5 @@ cdebconf-test
 *\.dat
 \.*\.swp
 \.*\.swo
+
+Session.vim
