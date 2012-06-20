@@ -1,6 +1,7 @@
 
 wireless-test
 cdebconf-test
+set-essid
 *\.dat
 \.*\.swp
 \.*\.swo
