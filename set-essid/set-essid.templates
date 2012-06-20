@@ -1,0 +1,57 @@
+
+Template: netcfg/wireless_show_essids
+Type: select
+Choices: ${essid_list}, Enter ESSID manually
+Description: Select wireless network
+ Select desired network name (ESSID) to attempt to connect.
+
+Template: netcfg/wireless_essid
+Type: string
+# :sl2:
+_Description: Wireless ESSID for ${iface}:
+ ${iface} is a wireless network interface. Please enter the name (the ESSID)
+ of the wireless network you would like ${iface} to use. If you would like
+ to use any available network, leave this field blank.
+
+Template: netcfg/wireless_essid_again
+Type: string
+# :sl2:
+_Description: Wireless ESSID for ${iface}:
+ Attempting to find an available wireless network failed.
+ .
+ ${iface} is a wireless network interface. Please enter the name (the ESSID)
+ of the wireless network you would like ${iface} to use. To skip wireless
+ configuration and continue, leave this field blank.
+
+Template: netcfg/wireless_adhoc_managed
+Type: select
+Default: Infrastructure (Managed) network
+# :sl2:
+# Note to translators : Please keep your translations of each choice
+# below the 65 columns limit (which means 65 characters for most languages)
+# Choices MUST be separated by commas
+# You MUST use standard commas not special commas for your language
+# You MUST NOT use commas inside choices
+__Choices: Infrastructure (Managed) network, Ad-hoc network (Peer to peer)
+_Description: Type of wireless network:
+ Wireless networks are either managed or ad-hoc. If you use a real access
+ point of some sort, your network is Managed. If another computer is your
+ 'access point', then your network may be Ad-hoc.
+
+Template: netcfg/invalid_essid
+Type: error
+# :sl2:
+_Description: Invalid ESSID
+ The ESSID "${essid}" is invalid. ESSIDs may only be up to 32 characters,
+ but may contain all kinds of characters.
+
+Template: netcfg/wifi_progress_title
+Type: text
+# :sl2:
+_Description: Wireless network configuration
+
+Template: netcfg/wifi_progress_info
+Type: text
+# :sl2:
+_Description: Searching for wireless access points...
+
