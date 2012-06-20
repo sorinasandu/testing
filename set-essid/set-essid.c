@@ -62,13 +62,69 @@ void interface_down (char* iface)
     }
 }
 
+int netcfg_wireless_auto_connect(struct debconfclient *client, char *iface,
+        wireless_config *wconf, int *couldnt_associate)
+{
+    int i, success = 0;
 
+    /* Default to any AP */
+    wconf->essid[0] = '\0';
+    wconf->essid_on = 0;
+
+    iw_set_basic_config (wfd, iface, wconf);
+
+    /* Wait for association.. (MAX_SECS seconds)*/
+#ifndef MAX_SECS
+#define MAX_SECS 3
+#endif
+
+    debconf_capb(client, "backup progresscancel");
+    debconf_progress_start(client, 0, MAX_SECS, "netcfg/wifi_progress_title");
+
+    if (debconf_progress_info(client, "netcfg/wifi_progress_info") == 30)
+        goto stop;
+    netcfg_progress_displayed = 1;
+
+    for (i = 0; i <= MAX_SECS; i++) {
+        int progress_ret;
+
+        interface_up(iface);
+        sleep (1);
+        iw_get_basic_config (wfd, iface, wconf);
+
+        if (!empty_str(wconf->essid)) {
+            /* Save for later */
+            debconf_set(client, "netcfg/wireless_essid", wconf->essid);
+            debconf_progress_set(client, MAX_SECS);
+            success = 1;
+            break;
+        }
+
+        progress_ret = debconf_progress_step(client, 1);
+        interface_down(iface);
+        if (progress_ret == 30)
+            break;
+    }
+
+stop:
+    debconf_progress_stop(client);
+    debconf_capb(client, "backup");
+    netcfg_progress_displayed = 0;
+
+    if (success)
+        return 0;
+
+    *couldnt_associate = 1;
+
+    return *couldnt_associate;
+}
 
 int netcfg_wireless_show_essids(struct debconfclient *client, char *iface, char *priority)
 {
     wireless_scan_head network_list;
     wireless_config wconf;
     char buffer[MAX_LEN] = "";
+    int couldnt_associate = 0;
 
     iw_get_basic_config (wfd, iface, &wconf);
     network_list.retry = 1;
@@ -101,8 +157,11 @@ int netcfg_wireless_show_essids(struct debconfclient *client, char *iface, char 
         /* Question not asked or we're succesfully associated. */
         if (!empty_str(wconf.essid) || empty_str(client->value)) {
             /* TODO Go to automatic... */
-
-            return -1;
+            if (netcfg_wireless_auto_connect(client, iface, &wconf,
+                        &couldnt_associate) == 0) {
+                return 0;
+            }
+            return couldnt_associate;
         }
 
         /* User wants to enter an ESSID manually. */
@@ -145,6 +204,7 @@ int netcfg_wireless_choose_essid_manually(struct debconfclient *client, char *if
     iw_get_basic_config (wfd, iface, &wconf);
 
     debconf_reset(client, "netcfg/wireless_essid");
+    debconf_reset(client, "netcfg/wireless_essid_again");
 
     debconf_subst(client, "netcfg/wireless_essid", "iface", iface);
     debconf_subst(client, "netcfg/wireless_essid_again", "iface", iface);
@@ -173,55 +233,11 @@ int netcfg_wireless_choose_essid_manually(struct debconfclient *client, char *if
 
 automatic:
     /* User doesn't care or we're successfully associated. */
-    if (!empty_str(wconf.essid) || empty_str(client->value))
-    {
-        int i, success = 0;
-
-        /* Default to any AP */
-        wconf.essid[0] = '\0';
-        wconf.essid_on = 0;
-
-        iw_set_basic_config (wfd, iface, &wconf);
-
-        /* Wait for association.. (MAX_SECS seconds)*/
-#define MAX_SECS 3
-
-        debconf_capb(client, "backup progresscancel");
-        debconf_progress_start(client, 0, MAX_SECS, "netcfg/wifi_progress_title");
-        if (debconf_progress_info(client, "netcfg/wifi_progress_info") == 30)
-            goto stop;
-        netcfg_progress_displayed = 1;
-
-        for (i = 0; i <= MAX_SECS; i++) {
-            int progress_ret;
-
-            interface_up(iface);
-            sleep (1);
-            iw_get_basic_config (wfd, iface, &wconf);
-
-            if (!empty_str(wconf.essid)) {
-                /* Save for later */
-                debconf_set(client, "netcfg/wireless_essid", wconf.essid);
-                debconf_progress_set(client, MAX_SECS);
-                success = 1;
-                break;
-            }
-
-            progress_ret = debconf_progress_step(client, 1);
-            interface_down(iface);
-            if (progress_ret == 30)
-                break;
-        }
-
-    stop:
-        debconf_progress_stop(client);
-        debconf_capb(client, "backup");
-        netcfg_progress_displayed = 0;
-
-        if (success)
+    if (!empty_str(wconf.essid) || empty_str(client->value)) {
+        if (netcfg_wireless_auto_connect(client, iface, &wconf,
+                &couldnt_associate) == 0) {
             return 0;
-
-        couldnt_associate = 1;
+        }
     }
 
     /* Yes, wants to set an essid by himself. */
@@ -288,22 +304,21 @@ automatic:
 int netcfg_wireless_set_essid(struct debconfclient *client, char *iface, char *priority)
 {
     wireless_config wconf;
-    int ret;
+    int choose_ret;
 
     iw_get_basic_config(wfd, iface, &wconf);
 
-
 select_essid:
-    ret = netcfg_wireless_show_essids(client, iface, priority);
+    choose_ret = netcfg_wireless_show_essids(client, iface, priority);
 
-    if (ret == GO_BACK) {
+    if (choose_ret == GO_BACK) {
         return GO_BACK;
     }
 
-    if (ret == ENTER_MANUALLY) {
-        int ret1 = netcfg_wireless_choose_essid_manually(client, iface);
+    if (choose_ret == ENTER_MANUALLY) {
+        int manually_ret = netcfg_wireless_choose_essid_manually(client, iface);
 
-        if (ret1 == GO_BACK) {
+        if (manually_ret == GO_BACK) {
             goto select_essid;
         }
     }
