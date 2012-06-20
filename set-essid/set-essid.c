@@ -294,7 +294,7 @@ int netcfg_wireless_set_essid(struct debconfclient *client, char *iface, char *p
 
 
 select_essid:
-    ret = netcfg_wireless_show_essids(client, iface, &wconf, priority);
+    ret = netcfg_wireless_show_essids(client, iface, priority);
 
     if (ret == GO_BACK) {
         return GO_BACK;
