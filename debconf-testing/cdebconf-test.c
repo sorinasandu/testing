@@ -53,7 +53,14 @@ and_again:
 
 void test2(struct debconfclient *client)
 {
+    /* Something with multiple choise. */
+    debconf_reset(client, "foo/other_choice");
+    debconf_subst(client, "foo/other_choice", "choices", "Some options");
 
+    debconf_input(client, "high", "foo/other_choice");
+    debconf_go(client);
+
+    debconf_get(client, "foo/other_choice");
 }
 
 int main(int argc, char **argv)
@@ -62,7 +69,9 @@ int main(int argc, char **argv)
 
     debconf_x_loadtemplate(client, "cdebconf-test.templates");
 
-    test1(client);
+//    test1(client);
+
+    test2(client);
 
     debconfclient_delete(client);
 

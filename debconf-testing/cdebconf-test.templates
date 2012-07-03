@@ -18,7 +18,8 @@ Description: Just stuff
 
 Template: foo/other_choice
 Type: select
+Choices-C: smth, ${choices}
 Choices: Something, ${choices}
-Description: Just stuff
+_Description: Just stuff
  It's so much stuff in here...
 
