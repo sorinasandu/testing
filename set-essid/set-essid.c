@@ -123,8 +123,9 @@ int netcfg_wireless_show_essids(struct debconfclient *client, char *iface, char 
 {
     wireless_scan_head network_list;
     wireless_config wconf;
-    char buffer[MAX_LEN] = "";
+    char *buffer;
     int couldnt_associate = 0;
+    int essid_list_len = 1;
 
     iw_get_basic_config (wfd, iface, &wconf);
     network_list.retry = 1;
@@ -132,6 +133,19 @@ int netcfg_wireless_show_essids(struct debconfclient *client, char *iface, char 
     if (iw_process_scan(wfd, iface, iw_get_kernel_we_version(),
                 &network_list) >= 0 ) {
         wireless_scan *network, *old;
+
+        /* Determine the actual length of the buffer. */
+        for (network = network_list.result; network; network = network->next) {
+            essid_list_len += strlen(network->b.essid);
+        }
+
+        /* Buffer initialization. */
+        buffer = malloc(essid_list_len * sizeof(char));
+        if (buffer == NULL) {
+            /* Error in memory allocation. */
+            return -1;
+        }
+        strcpy(buffer, "");
 
         /* Create list of available ESSIDs. */
         for (network = network_list.result; network; network = network->next) {
@@ -144,6 +158,7 @@ int netcfg_wireless_show_essids(struct debconfclient *client, char *iface, char 
         /* Asking the user. */
         debconf_reset(client, "netcfg/wireless_show_essids");
         debconf_capb(client, "backup");
+        strcpy(buffer, "");
         debconf_subst(client, "netcfg/wireless_show_essids", "essid_list", buffer);
         debconf_input(client, priority ? priority : "high", "netcfg/wireless_show_essids");
         int ret = debconf_go(client);
@@ -185,6 +200,7 @@ int netcfg_wireless_show_essids(struct debconfclient *client, char *iface, char 
             network = network->next;
             free(old);
         }
+        free(buffer);
     }
 
     iw_set_basic_config(wfd, iface, &wconf);
