@@ -3,13 +3,8 @@
 
 #define empty_str(s) (s != NULL && *s == '\0')
 
-int main(int argc, char **argv)
+void test1(struct debconfclient *client)
 {
-    struct debconfclient *client = debconfclient_new();
-
-
-    debconf_x_loadtemplate(client, "cdebconf-test.templates");
-
     /* Showing the question the first time. */
     debconf_reset(client, "foo/bar");  /* ask every time */
     debconf_input(client, "low", "foo/bar");
@@ -54,6 +49,20 @@ and_again:
 
     debconf_get(client, "foo/bar");
 
+}
+
+void test2(struct debconfclient *client)
+{
+
+}
+
+int main(int argc, char **argv)
+{
+    struct debconfclient *client = debconfclient_new();
+
+    debconf_x_loadtemplate(client, "cdebconf-test.templates");
+
+    test1(client);
 
     debconfclient_delete(client);
 

@@ -16,3 +16,9 @@ Choices: Something, Some other thing, Some other other thing, ${choices}
 Description: Just stuff
  It's so much stuff in here...
 
+Template: foo/other_choice
+Type: select
+Choices: Something, ${choices}
+Description: Just stuff
+ It's so much stuff in here...
+
