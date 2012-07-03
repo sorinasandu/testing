@@ -1,10 +1,10 @@
 
 build:
-	gcc -o set-essid -ldebconfclient set-essid.c -liw -Wall
+	gcc -o set-essid-test -ldebconfclient set-essid.c -liw -Wall
 
 clean:
-	sudo rm -f set-essid
+	sudo rm -f set-essid-test
 	sudo rm -f *\.dat
 
 run: build
-	sudo /usr/lib/cdebconf/debconf -fgtk ./set-essid
+	sudo /usr/lib/cdebconf/debconf -fgtk ./set-essid-test
