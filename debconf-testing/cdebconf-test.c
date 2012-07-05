@@ -55,7 +55,7 @@ void test2(struct debconfclient *client)
 {
     /* Something with multiple choise. */
     debconf_reset(client, "foo/other_choice");
-    debconf_subst(client, "foo/other_choice", "choices", "Some options");
+    debconf_subst(client, "foo/other_choice", "choices", "");
 
     debconf_input(client, "high", "foo/other_choice");
     debconf_go(client);
