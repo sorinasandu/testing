@@ -63,6 +63,19 @@ void test2(struct debconfclient *client)
     debconf_get(client, "foo/other_choice");
 }
 
+void test3(struct debconfclient *client)
+{
+    debconf_input(client, "high", "foo/bar");
+    debconf_go(client);
+
+    debconf_fset(client, "foo/bar", "seen", "false");
+    debconf_input(client, "medium", "foo/bar");
+    debconf_go(client);
+
+    debconf_input(client, "high", "foo/bar");
+    debconf_go(client);
+}
+
 int main(int argc, char **argv)
 {
     struct debconfclient *client = debconfclient_new();
@@ -71,7 +84,9 @@ int main(int argc, char **argv)
 
 //    test1(client);
 
-    test2(client);
+//    test2(client);
+
+    test3(client);
 
     debconfclient_delete(client);
 
