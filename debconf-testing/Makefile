@@ -1,11 +1,10 @@
 
 build:
-	gcc -o cdebconf-test -ldebconfclient cdebconf-test.c -Wall
+	gcc -o netcfg_test -ldebconfclient netcfg_templates_test.c -Wall
 
 clean:
-	rm cdebconf-test
-	rm *\.dat
+	rm -f netcfg_test
+	rm -f *\.dat
 
 run: build
-#	 DEBCONF_DEBUG=developer debconf ./cdebconf-test
-	DEBCONF_DEBUG=developer /usr/lib/cdebconf/debconf -fgtk ./cdebconf-test
+	DEBCONF_DEBUG=developer /usr/lib/cdebconf/debconf -fgtk ./netcfg_test

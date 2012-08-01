@@ -1,0 +1,8 @@
+
+Template: netcfg/write_wireless_config
+Type: boolean
+Default: false
+Description: Write wireless configurations for ${iface}:
+ Do you want to write the wireless configurations for ${iface} interface
+ to the ${interfaces_file} file?
+
