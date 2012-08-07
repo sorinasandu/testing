@@ -4,8 +4,5 @@ cdebconf-test
 sset-essid-test
 netcfg-test
 nm-test
+uuid4
 *\.dat
-\.*\.swp
-\.*\.swo
-
-Session.vim
