@@ -3,6 +3,7 @@ wireless-test
 cdebconf-test
 sset-essid-test
 netcfg-test
+nm-test
 *\.dat
 \.*\.swp
 \.*\.swo
