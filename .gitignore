@@ -1,7 +1,8 @@
 
 wireless-test
 cdebconf-test
-set-essid-test
+sset-essid-test
+netcfg-test
 *\.dat
 \.*\.swp
 \.*\.swo
