@@ -17,8 +17,10 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include "uuid4.h"
 
 #define DEBUG 0
+#define TEST_UUID 0
 
 
 char* uuid4_generate(char *uuid)
@@ -56,17 +58,18 @@ char* uuid4_generate(char *uuid)
             + rnd3;
 
 #if DEBUG
-    printf("DEBUG: pid = %d\n", pid);
-    printf("DEBUG: tp.tv_sec = %li\nDEBUG: tp.tv_usec = %li\n", tp.tv_sec,
-                                                               tp.tv_usec);
-    printf("DEBUG: tp.tv_sec ^ pid = %li\n", tp.tv_sec ^ pid);
-    printf("DEBUG: RAND_MAX = %d\n", RAND_MAX);
-    printf("DEBUG: uuidX = %d %d %d %d\n", rnd0, rnd1, rnd2, rnd3);
-    printf("uuid_hi = %016llx\nuuid_lo = %016llx\n", uuid_hi, uuid_lo);
+    fprintf(stderr, "DEBUG: pid = %d\n", pid);
+    fprintf(stderr, "DEBUG: tp.tv_sec = %li\nDEBUG: tp.tv_usec = %li\n",
+                tp.tv_sec, tp.tv_usec);
+    fprintf(stderr, "DEBUG: tp.tv_sec ^ pid = %li\n", tp.tv_sec ^ pid);
+    fprintf(stderr, "DEBUG: RAND_MAX = %d\n", RAND_MAX);
+    fprintf(stderr, "DEBUG: uuidX = %d %d %d %d\n", rnd0, rnd1, rnd2, rnd3);
+    fprintf(stderr, "uuid_hi = %016llx\nuuid_lo = %016llx\n",
+                uuid_hi, uuid_lo);
 #endif
 
     /* format the resulting uuid */
-    sprintf(uuid, "%08llx-%04llx-%04llx-%04llx-%012llx",
+    snprintf(uuid, UUID4_MAX_LEN, "%08llx-%04llx-%04llx-%04llx-%012llx",
                 (uuid_hi & 0xffffffff00000000) >> 32, /*  8 nibbles */
                 (uuid_hi & 0x00000000ffff0000) >> 16, /*  4 nibbles */
                 uuid_hi & 0x000000000000ffff,         /*  4 nibbles */
@@ -78,13 +81,15 @@ char* uuid4_generate(char *uuid)
 }
 
 
+#if TEST_UUID
 /* example usage */
 int main(int argc, char **argv)
 {
-    char uuid[25];
+    char uuid[UUID4_MAX_LEN];
 
     uuid4_generate(uuid);
     printf("%s\n", uuid);
 
     return 0;
 }
+#endif
