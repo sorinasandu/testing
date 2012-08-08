@@ -31,8 +31,25 @@ void nm_write_wireless_specific_options(FILE *config_file,
     fprintf(config_file, "mac=%s\n", wireless.mac_addr);
 
     if (wireless.is_secured == TRUE) {
-        fprintf(config_file, "security=%s", NM_DEFAULT_WIRELESS_SECURITY);
+        fprintf(config_file, "security=%s\n", NM_DEFAULT_WIRELESS_SECURITY);
     }
+}
+
+void nm_write_wireless_security(FILE *config_file, nm_wireless_security
+        wireless_security) //TODO
+{
+
+}
+
+void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4) // TODO
+{
+
+}
+
+void nm_write_ipv6(FILE *config_file, nm_ipv6 ipv6)
+{
+    fprintf(config_file, "\n%s\n", NM_SETTINGS_IPV6);
+    fprintf(config_file, "method=%s\n", "ignore");
 }
 
 /* Write Network Manager config file. */
@@ -44,13 +61,22 @@ void nm_write_config_file(struct nm_config_info nmconf)
         fprintf(stderr, "Unable to open file for writting configurations, "
                         "connection id might not be set or set to unproper "
                         "value. Current value: %s\n", nmconf.connection.id);
+        return;
     }
 
     nm_write_connection(config_file, nmconf.connection);
 
     if (nmconf.connection.type == WIRELESS) {
         nm_write_wireless_specific_options(config_file, nmconf.wireless);
+        if (nmconf.wireless.is_secured) {
+            nm_write_wireless_security(config_file, nmconf.wireless_security);
+        }
     }
+
+    nm_write_ipv4(config_file, nmconf.ipv4);
+    nm_write_ipv6(config_file, nmconf.ipv6);
+
+    fclose(config_file);
 }
 
 /* Functions for extracting information from netcfg variables. */
@@ -106,6 +132,24 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
     }
 }
 
+/* Security type for wireless networks. */
+void nm_get_wireless_security(nm_wireless_security *wireless_security) //TODO
+{
+
+}
+
+/* Save IPv4 settings. */
+void nm_get_ipv4(nm_ipv4 *ipv4) // TODO
+{
+
+}
+
+/* For the moment, just set it to ignore. */
+void nm_get_ipv6(nm_ipv6 *ipv6)
+{
+    ipv6->method = IGNORE;
+}
+
 /* Extract all configs for a wireless interface, from both global netcfg
  * values and other resources. */
 void nm_get_wireless_config(struct nm_config_info *nmconf)
@@ -113,6 +157,12 @@ void nm_get_wireless_config(struct nm_config_info *nmconf)
     nm_get_wireless_connection(&(nmconf->connection));
     nm_get_wireless_specific_options(&(nmconf->wireless));
 
+    if (nmconf->wireless.is_secured == TRUE) {
+        nm_get_wireless_security(&(nmconf->wireless_security));
+    }
+
+    nm_get_ipv4(&(nmconf->ipv4));
+    nm_get_ipv6(&(nmconf->ipv6));
 }
 
 /* Relies on global variables (y u no say? :) ) */

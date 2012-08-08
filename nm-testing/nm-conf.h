@@ -39,7 +39,7 @@
 #define NM_SETTINGS_WIRED               "["NM_DEFAULT_WIRED"]"
 #define NM_SETTINGS_WIRELESS_SECURITY   "["NM_DEFAULT_WIRELESS_SECURITY"]"
 #define NM_SETTINGS_IPV4                "[ipv4]"
-#define NM_SETTINGS_IPv6                "[ipv6]"
+#define NM_SETTINGS_IPV6                "[ipv6]"
 
 
 /* Minimalist structures for storing basic elements in order to write a Network
@@ -109,14 +109,22 @@ typedef struct nm_config_info
 void nm_write_connection(FILE *config_file, nm_connection connection);
 void nm_write_wireless_specific_options(FILE *config_file,
         nm_wireless wireless);
+void nm_write_wireless_security(FILE *config_file, nm_wireless_security
+        wireless_security); //TODO
+void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4); //TODO
+void nm_write_ipv6(FILE *config_file, nm_ipv6 ipv6);
 
 void nm_write_config_file(struct nm_config_info nmconf);
 
 
 void nm_get_wireless_connection(nm_connection *connection);
 void nm_get_wireless_specific_options(nm_wireless *wireless);
+void nm_get_wireless_security(nm_wireless_security *wireless_security); //TODO
+void nm_get_ipv4(nm_ipv4 *ipv4); //TODO
+void nm_get_ipv6(nm_ipv6 *ipv6);
 
 void nm_get_wireless_config(struct nm_config_info *nmconf);
+
 void nm_get_configuration(struct nm_config_info *nmconf);
 
 #endif
