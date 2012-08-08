@@ -1,6 +1,6 @@
 
 build:
-	gcc -o nm-test main.c nm-conf.c uuid4.c -liw
+	gcc -o nm-test main.c nm-conf.c uuid4.c -liw -Wall
 
 run: build
 	./nm-test

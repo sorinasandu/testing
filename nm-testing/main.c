@@ -23,20 +23,22 @@ struct in_addr *nameserver_array;
 wifimode_t mode = MANAGED;
 
 /* Wireless config */
-char* wepkey = NULL;
+char* wepkey = "some_key";
 char* essid = NULL;
 
 /* From wpa.c */
 char *passphrase = NULL;  /* This is referenced in other places directly */
-
-/* Netcfg uses this as static, but things can change :) */
-method_t netcfg_method = DHCP;
 
 /* Yep, this is a wireless interface. */
 int is_wireless_iface(char *inface)
 {
     return 1;
 }
+
+/* Netcfg uses this as static, but things can change :) */
+method_t netcfg_method = DHCP;
+wifisec_t wifi_security = WEP;
+
 
 void set_global_variables()
 {

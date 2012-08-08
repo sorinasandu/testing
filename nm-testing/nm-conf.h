@@ -12,6 +12,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+/* For toupper, check if available in the installer, otherwise write fct. */
+#include <ctype.h>
+
 /* Well, this is a new one, this must be here. */
 #include "uuid4.h"
 
@@ -21,6 +24,7 @@
 #define NM_MAX_LEN_MAC_ADDR   20   /* AA:BB:CC:DD:EE:FF format */
 #define NM_MAX_LEN_WPA_PSK    65   /* 64 standard + NULL char */
 #define NM_MAX_LEN_WEP_KEY    30   /* Rough estimation (should be 26) */
+#define NM_MAX_LEN_PATH       128  /* Assume a path won't be longer */
 #define NM_MAX_COUNT_DNS      4
 
 
@@ -28,6 +32,7 @@
 #define NM_DEFAULT_WIRED                "802-3-ethernet"
 #define NM_DEFAULT_WIRELESS             "802-11-wireless"
 #define NM_DEFAULT_WIRELESS_SECURITY    "802-11-wireless-security"
+#define NM_DEFAULT_PATH_FOR_MAC         "/sys/class/net/%s/address"
 
 #define NM_SETTINGS_CONNECTION          "[connection]"
 #define NM_SETTINGS_WIRELESS            "["NM_DEFAULT_WIRELESS"]"
@@ -62,7 +67,7 @@ typedef struct nm_wireless
 
 typedef struct nm_wireless_security
 {
-    enum {WEP, WPA}         key_mgmt;
+    enum {WEP_KEY, WPA_PSK}         key_mgmt;
 
     union
     {
@@ -102,9 +107,15 @@ typedef struct nm_config_info
 /* Here come functions: */
 
 void nm_write_connection(FILE *config_file, nm_connection connection);
+void nm_write_wireless_specific_options(FILE *config_file,
+        nm_wireless wireless);
+
 void nm_write_config_file(struct nm_config_info nmconf);
 
+
 void nm_get_wireless_connection(nm_connection *connection);
+void nm_get_wireless_specific_options(nm_wireless *wireless);
+
 void nm_get_wireless_config(struct nm_config_info *nmconf);
 void nm_get_configuration(struct nm_config_info *nmconf);
 

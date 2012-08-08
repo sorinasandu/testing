@@ -6,6 +6,7 @@
 
 typedef enum { DHCP, STATIC, DUNNO } method_t;
 typedef enum { ADHOC = 1, MANAGED = 2 } wifimode_t;
+typedef enum { WEP, WPA} wifisec_t;
 
 extern char *interface;
 extern int wfd;
@@ -25,10 +26,15 @@ extern char* essid;
 /* From wpa.c */
 extern char *passphrase;  /* This is referenced in other places directly */
 
+/* Yep, this is a wireless interface. */
+extern int is_wireless_iface(char *inface);
+
+/* TODO: those are not actually in netcfg, but could be easily added. */
+
 /* Netcfg uses this as static, but things can change :) */
 extern method_t netcfg_method;
 
-/* Yep, this is a wireless interface. */
-extern int is_wireless_iface(char *inface);
+extern wifisec_t wifi_security;
+
 
 #endif
