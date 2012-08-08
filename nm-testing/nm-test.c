@@ -93,10 +93,10 @@ typedef struct nm_connection
 
 typedef struct nm_wireless
 {
-    char                        ssid[NM_MAX_LEN_SSID];
-    char                        mac_addr[NM_MAX_LEN_MAC_ADDR];
-    wifimode_t                  mode;
-    enum {FALSE = 0, TRUE = 1}  is_secured; /* 1 = secured, 0 = unsecured */
+    char                            ssid[NM_MAX_LEN_SSID];
+    char                            mac_addr[NM_MAX_LEN_MAC_ADDR];
+    enum {AD_HOC, INFRASTRUCTURE}   mode;
+    enum {FALSE = 0, TRUE = 1}      is_secured; /* 1 = secure, 0 = unsecure */
 }   nm_wireless;
 
 typedef struct nm_wireless_security
@@ -117,15 +117,15 @@ typedef struct nm_wireless_security
 
 typedef struct nm_ipv4
 {
-    method_t            method;
-    struct in_addr      ipaddress;
-    struct in_addr      gateway;
-    struct in_addr      nameserver_array[NM_MAX_COUNT_DNS];
+    enum {AUTO, MANUAL}     method;
+    struct in_addr          ipaddress;
+    struct in_addr          gateway;
+    struct in_addr          nameserver_array[NM_MAX_COUNT_DNS];
 }   nm_ipv4;
 
 typedef struct nm_ipv6
 {
-    enum {AUTO, IGNORE} method;
+    enum {AUTO6, IGNORE} method;
 }   nm_ipv6;
 
 
