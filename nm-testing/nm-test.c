@@ -15,25 +15,10 @@
 #include "uuid4.h"
 
 /* Yep, we're testing and debuging, and this all. */
-#define NM_TEST_CONFIG 1
-#define NM_DEBUG 1
-
-
-/* Minimalist structure for storing basic elements in order to write a Network
- * Manager format config file. */
-struct nm_config_info
-{
-
-};
-
-void nm_write_config_file(struct nm_config_info nmconf)
-{
-
-}
-
+#define NM_TEST_CONFIG  1
+#define NM_DEBUG        1
 
 #if NM_TEST_CONFIG
-
 /* Let's just assume that we already know anything netcfg does about the
  * connection :) */
 
@@ -60,6 +45,97 @@ char *passphrase = NULL;  /* This is referenced in other places directly */
 
 /* Netcfg uses this as static, but things can change :) */
 method_t netcfg_method = DHCP;
+
+#endif
+
+
+/* Some Network Manager default values for connection types. */
+#define NM_DEFAULT_WIRED                "802-3-ethernet"
+#define NM_DEFAULT_WIRELESS             "802-11-wireless"
+#define NM_DEFAULT_WIRELESS_SECURITY    "802-11-wireless-security"
+
+
+/* Minimalist structures for storing basic elements in order to write a Network
+ * Manager format config file.
+ *
+ * See full specifications at:
+ *
+ * http://projects.gnome.org/NetworkManager/developers/settings-spec-08.html
+ *
+ */
+
+/* TODO: it might be better to also define the lengths for each char array
+ * field */
+
+typedef struct nm_connection
+{
+    char *                  id;
+    char *                  uuid;
+    enum {WIRED, WIRELESS}  type;
+}   nm_connection;
+
+typedef struct nm_wireless
+{
+    char *                      ssid;
+    wifimode_t                  mode;
+    char *                      mac_addr;
+    enum {FALSE = 0, TRUE = 1}  is_secured; /* 1 = secured, 0 = unsecured */
+}   nm_wireless;
+
+typedef struct nm_wireless_security
+{
+    enum {WEP, WPA}         key_mgmt;
+
+    union
+    {
+        char *              psk;
+        struct
+        {
+            enum {HEX_ASCII = 1, PASSPHRASE = 2}    wep_key_type;
+            enum {OPEN, SHARED}                     auth_alg;
+            char *                                  wep_key0;
+        };
+    };
+}   nm_wireless_security;
+
+typedef struct nm_ipv4
+{
+    method_t            method;
+    struct in_addr      ipaddress;
+    struct in_addr      gateway;
+    struct in_addr      nameserver_array[4];
+}   nm_ipv4;
+
+typedef struct nm_ipv6
+{
+    enum {AUTO, IGNORE} method;
+}   nm_ipv6;
+
+
+typedef struct nm_config_info
+{
+    nm_connection           connection;
+    nm_wireless             wireless;
+    nm_wireless_security    wireless_security;
+    nm_ipv4                 ipv4;
+    nm_ipv6                 ipv6;
+}   nm_config_info;
+
+
+/* Functions for writing Network Manager config file. */
+void nm_write_config_file(struct nm_config_info nmconf)
+{
+
+}
+
+/* Relies on global variables (y u no say? :) ) */
+void nm_get_configuration(struct nm_config_info *nmconf)
+{
+
+}
+
+
+#if NM_TEST_CONFIG
 
 
 #if NM_DEBUG
