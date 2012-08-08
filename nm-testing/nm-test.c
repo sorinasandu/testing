@@ -48,6 +48,14 @@ method_t netcfg_method = DHCP;
 
 #endif
 
+/* Constants for maximum size for Network Manager config fields. */
+#define NM_MAX_LEN_ID         128
+#define NM_MAX_LEN_SSID       128
+#define NM_MAX_LEN_MAC_ADDR   20   /* AA:BB:CC:DD:EE:FF format */
+#define NM_MAX_LEN_WPA_PSK    65   /* 64 standard + NULL char */
+#define NM_MAX_LEN_WEP_KEY    30   /* Rough estimation (should be 26) */
+#define NM_MAX_COUNT_DNS      4
+
 
 /* Some Network Manager default values for connection types. */
 #define NM_DEFAULT_WIRED                "802-3-ethernet"
@@ -63,22 +71,18 @@ method_t netcfg_method = DHCP;
  * http://projects.gnome.org/NetworkManager/developers/settings-spec-08.html
  *
  */
-
-/* TODO: it might be better to also define the lengths for each char array
- * field */
-
 typedef struct nm_connection
 {
-    char *                  id;
-    char *                  uuid;
+    char                    id[NM_MAX_LEN_ID];
+    char                    uuid[UUID4_MAX_LEN];
     enum {WIRED, WIRELESS}  type;
 }   nm_connection;
 
 typedef struct nm_wireless
 {
-    char *                      ssid;
+    char                        ssid[NM_MAX_LEN_SSID];
+    char                        mac_addr[NM_MAX_LEN_MAC_ADDR];
     wifimode_t                  mode;
-    char *                      mac_addr;
     enum {FALSE = 0, TRUE = 1}  is_secured; /* 1 = secured, 0 = unsecured */
 }   nm_wireless;
 
@@ -88,12 +92,12 @@ typedef struct nm_wireless_security
 
     union
     {
-        char *              psk;
+        char                psk[NM_MAX_LEN_WPA_PSK];
         struct
         {
-            enum {HEX_ASCII = 1, PASSPHRASE = 2}    wep_key_type;
-            enum {OPEN, SHARED}                     auth_alg;
-            char *                                  wep_key0;
+            enum {HEX_ASCII = 1, PASSPHRASE = 2}  wep_key_type;
+            enum {OPEN, SHARED}                   auth_alg;
+            char                                  wep_key0[NM_MAX_LEN_WEP_KEY];
         };
     };
 }   nm_wireless_security;
@@ -103,7 +107,7 @@ typedef struct nm_ipv4
     method_t            method;
     struct in_addr      ipaddress;
     struct in_addr      gateway;
-    struct in_addr      nameserver_array[4];
+    struct in_addr      nameserver_array[NM_MAX_COUNT_DNS];
 }   nm_ipv4;
 
 typedef struct nm_ipv6
@@ -120,6 +124,7 @@ typedef struct nm_config_info
     nm_ipv4                 ipv4;
     nm_ipv6                 ipv6;
 }   nm_config_info;
+
 
 
 /* Functions for writing Network Manager config file. */
