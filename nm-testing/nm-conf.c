@@ -125,7 +125,13 @@ void nm_write_config_file(struct nm_config_info nmconf)
 void nm_get_wireless_connection(nm_connection *connection)
 {
     snprintf(connection->id, NM_MAX_LEN_ID, "Auto %s", essid);
-    uuid4_generate(connection->uuid);
+
+    /* Generate uuid. */
+    uuid_t uuid;
+
+    uuid_generate(uuid);
+    uuid_unparse(uuid, connection->uuid);
+
     connection->type = WIRELESS;
 }
 

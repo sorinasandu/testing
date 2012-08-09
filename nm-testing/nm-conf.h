@@ -16,7 +16,7 @@
 #include <ctype.h>
 
 /* Well, this is a new one, this must be here. */
-#include "uuid4.h"
+#include <uuid/uuid.h>
 
 /* Constants for maximum size for Network Manager config fields. */
 #define NM_MAX_LEN_BUF          1024 /* Max len for most buffers */
@@ -27,6 +27,7 @@
 #define NM_MAX_LEN_WPA_PSK      65   /* 64 standard + NULL char */
 #define NM_MAX_LEN_WEP_KEY      30   /* Rough estimation (should be 26) */
 #define NM_MAX_LEN_PATH         128  /* Assume a path won't be longer */
+#define NM_MAX_LEN_UUID         40
 #define NM_MAX_COUNT_DNS        4
 
 
@@ -55,7 +56,7 @@
 typedef struct nm_connection
 {
     char                    id[NM_MAX_LEN_ID];
-    char                    uuid[UUID4_MAX_LEN];
+    char                    uuid[NM_MAX_LEN_UUID];
     enum {WIRED, WIRELESS}  type;
 }   nm_connection;
 
