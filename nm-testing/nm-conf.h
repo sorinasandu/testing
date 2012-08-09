@@ -76,7 +76,7 @@ typedef struct nm_wireless_security
         {
             enum {HEX_ASCII = 1, PASSPHRASE = 2}  wep_key_type;
             enum {OPEN, SHARED}                   auth_alg;
-            char                                  wep_key0[NM_MAX_LEN_WEP_KEY];
+            unsigned char                         wep_key0[NM_MAX_LEN_WEP_KEY];
         };
     };
 }   nm_wireless_security;

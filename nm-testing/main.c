@@ -23,7 +23,7 @@ struct in_addr *nameserver_array;
 wifimode_t mode = MANAGED;
 
 /* Wireless config */
-char* wepkey = "some_key";
+char* wepkey = NULL;
 char* essid = NULL;
 
 /* From wpa.c */
@@ -42,10 +42,13 @@ wifisec_t wifi_security = WEP;
 
 void set_global_variables()
 {
+    wfd = iw_sockets_open();
     interface = "eth1";
     essid = "sorina";
+    wifi_security = WEP;
+    passphrase = "noubliezjamais";
+    wepkey = "s:noubliezjamai";
 
-    wfd = iw_sockets_open();
 }
 
 #if NM_DEBUG

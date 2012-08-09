@@ -36,9 +36,22 @@ void nm_write_wireless_specific_options(FILE *config_file,
 }
 
 void nm_write_wireless_security(FILE *config_file, nm_wireless_security
-        wireless_security) //TODO
+        wireless_security)
 {
+    fprintf(config_file, "\n%s\n", NM_SETTINGS_WIRELESS_SECURITY);
 
+    if (wireless_security.key_mgmt == WPA_PSK) {
+        fprintf(config_file, "key-mgmt=%s\n", "wpa-psk");
+        fprintf(config_file, "psk=%s\n", wireless_security.psk);
+    }
+    else {
+        fprintf(config_file, "key-mgmt=%s\n", "none");
+        fprintf(config_file, "auth-alg=%s\n",
+                (wireless_security.auth_alg == OPEN) ? "open" : "shared");
+        fprintf(config_file, "wep-key0=%s\n", wireless_security.wep_key0);
+        fprintf(config_file, "wep-key-type=%d\n",
+                wireless_security.wep_key_type);
+    }
 }
 
 void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4) // TODO
@@ -133,9 +146,20 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
 }
 
 /* Security type for wireless networks. */
-void nm_get_wireless_security(nm_wireless_security *wireless_security) //TODO
+void nm_get_wireless_security(nm_wireless_security *wireless_security)
 {
-
+    if (wifi_security == WPA) {
+        wireless_security->key_mgmt = WPA_PSK;
+        strncpy(wireless_security->psk, passphrase, NM_MAX_LEN_WPA_PSK);
+    }
+    else {
+        wireless_security->key_mgmt = WEP_KEY;
+        memset(wireless_security->wep_key0, 0, NM_MAX_LEN_WEP_KEY);
+        iw_in_key(wepkey, wireless_security->wep_key0);
+        /* TODO: find a way to actually determine those: */
+        wireless_security->wep_key_type = HEX_ASCII;
+        wireless_security->auth_alg = OPEN;
+    }
 }
 
 /* Save IPv4 settings. */
