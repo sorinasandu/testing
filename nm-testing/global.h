@@ -15,6 +15,7 @@ extern int wfd;
 extern struct in_addr ipaddress;
 extern struct in_addr gateway;
 extern struct in_addr *nameserver_array;
+extern struct in_addr netmask;
 
 /* Wireless mode */
 extern wifimode_t mode;

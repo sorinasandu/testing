@@ -8,6 +8,8 @@
 #include "global.h"
 #include "nm-conf.h"
 
+#include <stdlib.h>
+
 /* Let's just assume that we already know anything netcfg does about the
  * connection :) */
 
@@ -18,6 +20,7 @@ int wfd;
 struct in_addr ipaddress;
 struct in_addr gateway;
 struct in_addr *nameserver_array;
+struct in_addr netmask;
 
 /* Wireless mode */
 wifimode_t mode = MANAGED;
@@ -36,7 +39,7 @@ int is_wireless_iface(char *inface)
 }
 
 /* Netcfg uses this as static, but things can change :) */
-method_t netcfg_method = DHCP;
+method_t netcfg_method = STATIC;
 wifisec_t wifi_security = WEP;
 
 
@@ -45,10 +48,20 @@ void set_global_variables()
     wfd = iw_sockets_open();
     interface = "eth1";
     essid = "sorina";
-    wifi_security = WEP;
+    wifi_security = WPA;
     passphrase = "noubliezjamais";
     wepkey = "s:noubliezjamai";
 
+    ipaddress.s_addr = 0;
+    gateway.s_addr = 0;
+    netmask.s_addr = 0;
+
+    nameserver_array = malloc(4 * sizeof(struct in_addr));
+
+    inet_pton(AF_INET, "8.8.8.8", &nameserver_array[0].s_addr);
+    nameserver_array[1].s_addr = 0;
+    nameserver_array[2].s_addr = 0;
+    nameserver_array[3].s_addr = 0;
 }
 
 #if NM_DEBUG
