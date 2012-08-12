@@ -9,6 +9,23 @@
 #include "global.h"
 #endif
 
+/* Helpers. */
+
+int nm_count_one_bits(struct in_addr address)
+{
+    int         i, bit_count = 0;
+    uint32_t    mask = 1;
+
+    for (i = 0; i < NM_NO_BITS_IPV4; i ++) {
+        if (address.s_addr & mask) {
+            bit_count ++;
+        }
+        mask = mask << 1;
+    }
+
+    return bit_count;
+}
+
 
 /* Functions for printing informations in Network Manager format. */
 
@@ -141,8 +158,8 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
     strncpy(wireless->ssid, essid, NM_MAX_LEN_SSID);
 
     /* Get MAC address from default file. */
-    char file_name[NM_MAX_LEN_PATH];
-    FILE *file;
+    char    file_name[NM_MAX_LEN_PATH];
+    FILE    *file;
 
     snprintf(file_name, NM_MAX_LEN_PATH, NM_DEFAULT_PATH_FOR_MAC, interface);
     file = fopen(file_name, "r");

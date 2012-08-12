@@ -29,6 +29,7 @@
 #define NM_MAX_LEN_PATH         128  /* Assume a path won't be longer */
 #define NM_MAX_LEN_UUID         40
 #define NM_MAX_COUNT_DNS        4
+#define NM_NO_BITS_IPV4         32
 
 
 /* Some Network Manager default values for connection types. */
@@ -114,7 +115,7 @@ void nm_write_connection(FILE *config_file, nm_connection connection);
 void nm_write_wireless_specific_options(FILE *config_file,
         nm_wireless wireless);
 void nm_write_wireless_security(FILE *config_file, nm_wireless_security
-        wireless_security); //TODO
+        wireless_security);
 void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4); //TODO
 void nm_write_ipv6(FILE *config_file, nm_ipv6 ipv6);
 
@@ -123,13 +124,16 @@ void nm_write_config_file(struct nm_config_info nmconf);
 
 void nm_get_wireless_connection(nm_connection *connection);
 void nm_get_wireless_specific_options(nm_wireless *wireless);
-void nm_get_wireless_security(nm_wireless_security *wireless_security); //TODO
-void nm_get_ipv4(nm_ipv4 *ipv4); //TODO
+void nm_get_wireless_security(nm_wireless_security *wireless_security);
+void nm_get_ipv4(nm_ipv4 *ipv4);
 void nm_get_ipv6(nm_ipv6 *ipv6);
 
 void nm_get_wireless_config(struct nm_config_info *nmconf);
 
 void nm_get_configuration(struct nm_config_info *nmconf);
+
+/* Helpers: */
+int nm_count_one_bits(struct in_addr address);
 
 #endif
 

@@ -54,7 +54,9 @@ void set_global_variables()
 
     ipaddress.s_addr = 0;
     gateway.s_addr = 0;
-    netmask.s_addr = 0;
+
+
+    inet_pton(AF_INET, "255.255.255.0", &netmask.s_addr);
 
     nameserver_array = malloc(4 * sizeof(struct in_addr));
 
@@ -95,6 +97,8 @@ int main()
 
 #if NM_DEBUG
     show_wconf_info();
+
+    fprintf(stderr, "DEBUG: Mask = %u\n", nm_count_one_bits(netmask));
 #endif
 
     nm_config_info nmconf;
