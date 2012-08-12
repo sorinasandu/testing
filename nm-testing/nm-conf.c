@@ -16,7 +16,7 @@ int nm_count_one_bits(struct in_addr address)
     int         i, bit_count = 0;
     uint32_t    mask = 1;
 
-    for (i = 0; i < NM_NO_BITS_IPV4; i ++) {
+    for (i = 0; i < NM_NO_BITS_IPV4; i++) {
         if (address.s_addr & mask) {
             bit_count ++;
         }
@@ -45,10 +45,21 @@ void nm_write_wireless_specific_options(FILE *config_file,
     fprintf(config_file, "ssid=%s\n", wireless.ssid);
     fprintf(config_file, "mode=%s\n", (wireless.mode == AD_HOC) ?
             "adhoc" : "infrastructure");
-    fprintf(config_file, "mac=%s\n", wireless.mac_addr);
 
+    if (strcmp(wireless.mac_addr, "")) {
+        fprintf(config_file, "mac=%s\n", wireless.mac_addr);
+    }
     if (wireless.is_secured == TRUE) {
         fprintf(config_file, "security=%s\n", NM_DEFAULT_WIRELESS_SECURITY);
+    }
+}
+
+void nm_write_wired_specific_options(FILE *config_file, nm_wired wired)
+{
+    fprintf(config_file, "\n%s\n", NM_SETTINGS_WIRED);
+
+    if (strcmp(wired.mac_addr, "")) {
+        fprintf(config_file, "mac=%s\n", wired.mac_addr);
     }
 }
 
@@ -99,7 +110,30 @@ void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4)
         }
 
         /* Get addresses in printable format. */
-        // TODO
+        memset(buffer, 0, NM_MAX_LEN_BUF);
+
+        /* Write IP address to the buffer. */
+        inet_ntop(AF_INET, &(ipv4.ip_address), addr, INET_ADDRSTRLEN);
+        strcat(buffer, addr);
+        strcat(buffer, ";");
+
+        /* Write netmask to the buffer. */
+        sprintf(addr, "%d", nm_count_one_bits(ipv4.netmask));
+        strcat(buffer, addr);
+        strcat(buffer, ";");
+
+        /* Write gateway address to the buffer. */
+        if (ipv4.gateway.s_addr) {
+            inet_ntop(AF_INET, &(gateway), addr, INET_ADDRSTRLEN);
+        }
+        else {
+            strcpy(addr, "0");
+        }
+        strcat(buffer, addr);
+        strcat(buffer, ";");
+
+        /* Write config to the configuration file. */
+        fprintf(config_file, "addresses1=%s\n", buffer);
     }
 }
 
@@ -129,6 +163,9 @@ void nm_write_config_file(struct nm_config_info nmconf)
             nm_write_wireless_security(config_file, nmconf.wireless_security);
         }
     }
+    else {
+        nm_write_wired_specific_options(config_file, nmconf.wired);
+    }
 
     nm_write_ipv4(config_file, nmconf.ipv4);
     nm_write_ipv6(config_file, nmconf.ipv6);
@@ -138,7 +175,7 @@ void nm_write_config_file(struct nm_config_info nmconf)
 
 /* Functions for extracting information from netcfg variables. */
 
-/* Get info for the connection setting. */
+/* Get info for the connection setting for wireless networks. */
 void nm_get_wireless_connection(nm_connection *connection)
 {
     snprintf(connection->id, NM_MAX_LEN_ID, "Auto %s", essid);
@@ -152,12 +189,23 @@ void nm_get_wireless_connection(nm_connection *connection)
     connection->type = WIRELESS;
 }
 
-
-void nm_get_wireless_specific_options(nm_wireless *wireless)
+/* Get info for the connection setting for wired networks. */
+void nm_get_wired_connection(nm_connection *connection)
 {
-    strncpy(wireless->ssid, essid, NM_MAX_LEN_SSID);
+    snprintf(connection->id, NM_MAX_LEN_ID, "Wired connection 1");
 
-    /* Get MAC address from default file. */
+    /* Generate uuid. */
+    uuid_t uuid;
+
+    uuid_generate(uuid);
+    uuid_unparse(uuid, connection->uuid);
+
+    connection->type = WIRED;
+}
+
+/* Get MAC address from default file. */
+void nm_get_mac_address(char *mac_addr)
+{
     char    file_name[NM_MAX_LEN_PATH];
     FILE    *file;
 
@@ -165,17 +213,24 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
     file = fopen(file_name, "r");
 
     if (file == NULL) {
-        wireless->mac_addr[0] = '\0';   /* Empty string means no MAC. */
+        mac_addr[0] = '\0';   /* Empty string means don't write MAC. */
     }
     else {
-        fscanf(file, "%s\n", wireless->mac_addr);
+        fscanf(file, "%s\n", mac_addr);
 
         /* Should be upper case. */
         int i;
-        for (i = 0; wireless->mac_addr[i]; i++) {
-            wireless->mac_addr[i] = toupper(wireless->mac_addr[i]);
+        for (i = 0; mac_addr[i]; i++) {
+            mac_addr[i] = toupper(mac_addr[i]);
         }
     }
+}
+
+void nm_get_wireless_specific_options(nm_wireless *wireless)
+{
+    strncpy(wireless->ssid, essid, NM_MAX_LEN_SSID);
+
+    nm_get_mac_address(wireless->mac_addr);
 
     /* Decide mode. */
     if (mode == ADHOC) {
@@ -195,6 +250,12 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
     }
 }
 
+/* Only set MAC address, the others have good defaults in NM. */
+void nm_get_wired_specific_options(nm_wired *wired)
+{
+    nm_get_mac_address(wired->mac_addr);
+}
+
 /* Security type for wireless networks. */
 void nm_get_wireless_security(nm_wireless_security *wireless_security)
 {
@@ -206,7 +267,7 @@ void nm_get_wireless_security(nm_wireless_security *wireless_security)
         wireless_security->key_mgmt = WEP_KEY;
         memset(wireless_security->wep_key0, 0, NM_MAX_LEN_WEP_KEY);
         iw_in_key(wepkey, wireless_security->wep_key0);
-        /* TODO: find a way to actually determine those: */
+        /* Only options supported by netcfg for now. */
         wireless_security->wep_key_type = HEX_ASCII;
         wireless_security->auth_alg = OPEN;
     }
@@ -252,11 +313,23 @@ void nm_get_wireless_config(struct nm_config_info *nmconf)
     nm_get_ipv6(&(nmconf->ipv6));
 }
 
+/* Extract all configs for a wired interface. */
+void nm_get_wired_config(struct nm_config_info *nmconf)
+{
+    nm_get_wired_connection(&(nmconf->connection));
+    nm_get_wired_specific_options(&(nmconf->wired));
+    nm_get_ipv4(&(nmconf->ipv4));
+    nm_get_ipv6(&(nmconf->ipv6));
+}
+
 /* Relies on global variables (y u no say? :) ) */
 void nm_get_configuration(struct nm_config_info *nmconf)
 {
     /* Decide if wireless configuration is needed. */
     if (is_wireless_iface(interface)) {
         nm_get_wireless_config(nmconf);
+    }
+    else {
+        nm_get_wired_config(nmconf);
     }
 }

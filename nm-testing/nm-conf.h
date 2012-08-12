@@ -61,6 +61,11 @@ typedef struct nm_connection
     enum {WIRED, WIRELESS}  type;
 }   nm_connection;
 
+typedef struct nm_wired
+{
+    char                            mac_addr[NM_MAX_LEN_MAC_ADDR];
+}   nm_wired;
+
 typedef struct nm_wireless
 {
     char                            ssid[NM_MAX_LEN_SSID];
@@ -103,6 +108,7 @@ typedef struct nm_ipv6
 typedef struct nm_config_info
 {
     nm_connection           connection;
+    nm_wired                wired;
     nm_wireless             wireless;
     nm_wireless_security    wireless_security;
     nm_ipv4                 ipv4;
@@ -114,6 +120,7 @@ typedef struct nm_config_info
 void nm_write_connection(FILE *config_file, nm_connection connection);
 void nm_write_wireless_specific_options(FILE *config_file,
         nm_wireless wireless);
+void nm_write_wired_specific_options(FILE *config_file, nm_wired wired);
 void nm_write_wireless_security(FILE *config_file, nm_wireless_security
         wireless_security);
 void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4); //TODO
@@ -123,12 +130,16 @@ void nm_write_config_file(struct nm_config_info nmconf);
 
 
 void nm_get_wireless_connection(nm_connection *connection);
+void nm_get_wired_connection(nm_connection *connection);
+void nm_get_mac_address(char *mac_addr);
 void nm_get_wireless_specific_options(nm_wireless *wireless);
+void nm_get_wired_specific_options(nm_wired *wired);
 void nm_get_wireless_security(nm_wireless_security *wireless_security);
 void nm_get_ipv4(nm_ipv4 *ipv4);
 void nm_get_ipv6(nm_ipv6 *ipv6);
 
 void nm_get_wireless_config(struct nm_config_info *nmconf);
+void nm_get_wired_config(struct nm_config_info *nmconf);
 
 void nm_get_configuration(struct nm_config_info *nmconf);
 

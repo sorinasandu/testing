@@ -13,7 +13,7 @@
 /* Let's just assume that we already know anything netcfg does about the
  * connection :) */
 
-char *interface = "eth1";
+char *interface;
 int wfd;
 
 /* IP address vars */
@@ -33,9 +33,10 @@ char* essid = NULL;
 char *passphrase = NULL;  /* This is referenced in other places directly */
 
 /* Yep, this is a wireless interface. */
+/* LE: or maybe sometimes it isn't :D */
 int is_wireless_iface(char *inface)
 {
-    return 1;
+    return 0;
 }
 
 /* Netcfg uses this as static, but things can change :) */
@@ -46,22 +47,20 @@ wifisec_t wifi_security = WEP;
 void set_global_variables()
 {
     wfd = iw_sockets_open();
-    interface = "eth1";
+    interface = "eth0";
     essid = "sorina";
     wifi_security = WPA;
     passphrase = "noubliezjamais";
     wepkey = "s:noubliezjamai";
 
-    ipaddress.s_addr = 0;
-    gateway.s_addr = 0;
-
-
+    inet_pton(AF_INET, "192.168.10.123", &ipaddress.s_addr);
+    inet_pton(AF_INET, "192.168.10.1", &gateway.s_addr);
     inet_pton(AF_INET, "255.255.255.0", &netmask.s_addr);
 
     nameserver_array = malloc(4 * sizeof(struct in_addr));
 
     inet_pton(AF_INET, "8.8.8.8", &nameserver_array[0].s_addr);
-    nameserver_array[1].s_addr = 0;
+    inet_pton(AF_INET, "4.4.4.4", &nameserver_array[1].s_addr);
     nameserver_array[2].s_addr = 0;
     nameserver_array[3].s_addr = 0;
 }
