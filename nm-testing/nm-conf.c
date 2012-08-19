@@ -242,7 +242,7 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
 
     /* In netcfg, you have to chose WEP and leave the key empty for an
      * unsecure connection. */
-    if (wifi_security == WEP &&  wepkey == NULL) {
+    if (wifi_security == REPLY_WEP &&  wepkey == NULL) {
         wireless->is_secured = FALSE;
     }
     else {
@@ -259,7 +259,7 @@ void nm_get_wired_specific_options(nm_wired *wired)
 /* Security type for wireless networks. */
 void nm_get_wireless_security(nm_wireless_security *wireless_security)
 {
-    if (wifi_security == WPA) {
+    if (wifi_security == REPLY_WPA) {
         wireless_security->key_mgmt = WPA_PSK;
         strncpy(wireless_security->psk, passphrase, NM_MAX_LEN_WPA_PSK);
     }

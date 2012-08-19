@@ -1,7 +1,7 @@
 
 /* Yep, we're testing and debuging, and this all. */
 #define NM_TEST_CONFIG  1
-#define NM_DEBUG        1
+#define NM_DEBUG        0
 
 #if NM_TEST_CONFIG
 
@@ -36,26 +36,61 @@ char *passphrase = NULL;  /* This is referenced in other places directly */
 /* LE: or maybe sometimes it isn't :D */
 int is_wireless_iface(char *inface)
 {
-    return 0;
+    return 1;
 }
 
 /* Netcfg uses this as static, but things can change :) */
 method_t netcfg_method = STATIC;
-wifisec_t wifi_security = WEP;
+response_t wifi_security;
+
+/* Checks if an address is a valid netmask, "^1*0*$", returns 1 for a valid
+ * netmask, 0 otherwise. */
+int netcfg_check_netmask(struct in_addr netmask)
+{
+    unsigned char mask, byte;
+    int flag = 0;
+    int byte_count, bit_count;
+
+    for (byte_count = 0; byte_count < 4; byte_count++) {
+        /* Get each byte of the netmask, network byte order. */
+        byte = *(((unsigned char *) &(netmask.s_addr)) + byte_count);
+
+        for (bit_count = 7; bit_count >= 0; bit_count--) {
+            mask = 1 << bit_count;
+
+            /* 1 bit. */
+            if (mask & byte) {
+                /* There's an 1 bit where there should be only 0s. */
+                if (flag == 1) {
+                    return 0;
+                }
+            }
+            /* 0 bit. */
+            else {
+                /* The initial sequence of 1 bits is over. */
+                flag = 1;
+            }
+        }
+    }
+
+    return 1;
+}
 
 
 void set_global_variables()
 {
     wfd = iw_sockets_open();
-    interface = "eth0";
+    interface = "eth1";
+    netcfg_method = STATIC;
+
     essid = "sorina";
-    wifi_security = WPA;
+    wifi_security = REPLY_WPA;
     passphrase = "noubliezjamais";
     wepkey = "s:noubliezjamai";
 
     inet_pton(AF_INET, "192.168.10.123", &ipaddress.s_addr);
     inet_pton(AF_INET, "192.168.10.1", &gateway.s_addr);
-    inet_pton(AF_INET, "255.255.255.0", &netmask.s_addr);
+    inet_pton(AF_INET, "255.254.0.0", &netmask.s_addr);
 
     nameserver_array = malloc(4 * sizeof(struct in_addr));
 
@@ -93,6 +128,8 @@ int main()
 #endif
 
     set_global_variables();
+
+    printf("Netmask result: %d\n", netcfg_check_netmask(netmask));
 
 #if NM_DEBUG
     show_wconf_info();

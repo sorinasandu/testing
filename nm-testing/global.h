@@ -4,9 +4,10 @@
 /* Let's just assume that we already know anything netcfg does about the
  * connection :) */
 
+
 typedef enum { DHCP, STATIC, DUNNO } method_t;
 typedef enum { ADHOC = 1, MANAGED = 2 } wifimode_t;
-typedef enum { WEP, WPA} wifisec_t;
+typedef enum { REPLY_WEP, REPLY_WPA} response_t;
 
 extern char *interface;
 extern int wfd;
@@ -35,7 +36,7 @@ extern int is_wireless_iface(char *inface);
 /* Netcfg uses this as static, but things can change :) */
 extern method_t netcfg_method;
 
-extern wifisec_t wifi_security;
+extern response_t wifi_security;
 
 
 #endif
