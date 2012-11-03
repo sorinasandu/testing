@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
 //    test2(client);
 
-    test3(client);
+//    test3(client);
 
     debconfclient_delete(client);
 

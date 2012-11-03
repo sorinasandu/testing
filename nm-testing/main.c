@@ -43,7 +43,7 @@ int is_wireless_iface(char *inface)
 method_t netcfg_method = STATIC;
 response_t wifi_security;
 
-/* Checks if an address is a valid netmask, "^1*0*$", returns 1 for a valid
+/* Checks if an address is a valid netmask, "^1+0+$", returns 1 for a valid
  * netmask, 0 otherwise. */
 int netcfg_check_netmask(struct in_addr netmask)
 {
@@ -69,8 +69,18 @@ int netcfg_check_netmask(struct in_addr netmask)
             else {
                 /* The initial sequence of 1 bits is over. */
                 flag = 1;
+
+                /* Mask only has 0 bits (/0). */
+                if (byte_count == 0 && bit_count == 7) {
+                    return 0;
+                }
             }
         }
+    }
+
+    /* Mask only has 1 bits (/32). */
+    if (flag == 0) {
+        return 0;
     }
 
     return 1;
@@ -90,7 +100,7 @@ void set_global_variables()
 
     inet_pton(AF_INET, "192.168.10.123", &ipaddress.s_addr);
     inet_pton(AF_INET, "192.168.10.1", &gateway.s_addr);
-    inet_pton(AF_INET, "255.254.0.0", &netmask.s_addr);
+    inet_pton(AF_INET, "255.255.255.255", &netmask.s_addr);
 
     nameserver_array = malloc(4 * sizeof(struct in_addr));
 

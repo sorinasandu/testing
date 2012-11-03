@@ -6,3 +6,14 @@ Description: Write wireless configurations for ${iface}:
  Do you want to write the wireless configurations for ${iface} interface
  to the ${interfaces_file} file?
 
+Template: netcfg/base_system_config
+Type: select
+Choices: Network Manager configuration, /etc/network/interfaces configuration, Minimal loopback configutation in /etc/network/interfaces
+# A substitution of the network-manager-info variable should provide info
+# related to Network Manager status, and what would best practice be in
+# the given situation.
+Description: Post installation network configuration:
+ Please choose what kind of network configuration you want to have on your
+ system after the installation process is complete.
+ ${network-manager-info}
+

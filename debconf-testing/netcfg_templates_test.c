@@ -27,6 +27,16 @@ int test1(struct debconfclient *client)
     return rv;
 }
 
+int test2(struct debconfclient *client)
+{
+    debconf_input(client, "high", "netcfg/base_system_config");
+    debconf_go(client);
+    debconf_get(client, "netcfg/base_system_config");
+
+    return 0;
+}
+
+
 int main(int argc, char **argv)
 {
     struct debconfclient *client = debconfclient_new();
@@ -34,7 +44,7 @@ int main(int argc, char **argv)
     debconf_x_loadtemplate(client,
             "netcfg_templates_test.templates");
 
-    fprintf(stderr, "%d\n", test1(client));
+    fprintf(stderr, "%d\n", test2(client));
 
 
     debconfclient_delete(client);
