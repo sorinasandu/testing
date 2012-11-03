@@ -185,12 +185,12 @@ void nm_write_configuration(struct nm_config_info nmconf)
 /* Get info for the connection setting for wireless networks. */
 
 #ifdef WIRELESS
-void nm_get_wireless_connection(nm_connection *connection)
+void nm_get_wireless_connection(struct netcfg_interface *niface, nm_connection *connection)
 {
     uuid_t uuid;
 
     /* Use the wireless network name for connection id. */
-    snprintf(connection->id, NM_MAX_LEN_ID, "Auto %s", essid);
+    snprintf(connection->id, NM_MAX_LEN_ID, "Auto %s", niface->essid);
 
     /* Generate uuid. */
     uuid_generate(uuid);
@@ -240,14 +240,14 @@ void nm_get_mac_address(char *interface, char *mac_addr)
 }
 
 #ifdef WIRELESS
-void nm_get_wireless_specific_options(nm_wireless *wireless)
+void nm_get_wireless_specific_options(struct netcfg_interface *niface, nm_wireless *wireless)
 {
-    strncpy(wireless->ssid, essid, NM_MAX_LEN_SSID);
+    strncpy(wireless->ssid, niface->essid, NM_MAX_LEN_SSID);
 
-    nm_get_mac_address(interface, wireless->mac_addr);
+    nm_get_mac_address(niface->name, wireless->mac_addr);
 
     /* Decide mode. */
-    if (mode == ADHOC) {
+    if (niface->mode == ADHOC) {
         wireless->mode = AD_HOC;
     }
     else {
@@ -256,7 +256,7 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
 
     /* In netcfg, you have to chose WEP and leave the key empty for an
      * unsecure connection. */
-    if (wifi_security == REPLY_WEP &&  wepkey == NULL) {
+    if (niface->wifi_security == REPLY_WEP && niface->wepkey == NULL) {
         wireless->is_secured = FALSE;
     }
     else {
@@ -273,16 +273,17 @@ void nm_get_wired_specific_options(struct netcfg_interface *niface, nm_wired *wi
 
 /* Security type for wireless networks. */
 #ifdef WIRELESS
-void nm_get_wireless_security(nm_wireless_security *wireless_security)
+void nm_get_wireless_security(struct netcfg_interface *niface, nm_wireless_security *wireless_security)
 {
-    if (wifi_security == REPLY_WPA) {
+    if (niface->wifi_security == REPLY_WPA) {
         wireless_security->key_mgmt = WPA_PSK;
-        strncpy(wireless_security->psk, passphrase, NM_MAX_LEN_WPA_PSK);
+        memset(wireless_security->psk, 0, NM_MAX_LEN_WPA_PSK);
+        strncpy(wireless_security->psk, niface->passphrase, NM_MAX_LEN_WPA_PSK - 1);
     }
     else {
         wireless_security->key_mgmt = WEP_KEY;
         memset(wireless_security->wep_key0, 0, NM_MAX_LEN_WEP_KEY);
-        iw_in_key(wepkey, wireless_security->wep_key0);
+        iw_in_key(niface->wepkey, wireless_security->wep_key0);
 
         /* Only options supported by netcfg for now. */
         wireless_security->wep_key_type = HEX_ASCII;
@@ -328,11 +329,11 @@ void nm_get_ipv6(struct netcfg_interface *niface, nm_ipv6 *ipv6)
 #ifdef WIRELESS
 void nm_get_wireless_config(struct netcfg_interface *niface, struct nm_config_info *nmconf)
 {
-    nm_get_wireless_connection(&(nmconf->connection));
-    nm_get_wireless_specific_options(&(nmconf->wireless));
+    nm_get_wireless_connection(niface, &(nmconf->connection));
+    nm_get_wireless_specific_options(niface, &(nmconf->wireless));
 
     if (nmconf->wireless.is_secured == TRUE) {
-        nm_get_wireless_security(&(nmconf->wireless_security));
+        nm_get_wireless_security(niface, &(nmconf->wireless_security));
     }
 
     nm_get_ipv4(niface, &(nmconf->ipv4));

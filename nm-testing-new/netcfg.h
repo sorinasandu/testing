@@ -144,6 +144,7 @@ struct netcfg_interface {
 	wifimode_t mode;
 
 	/* Wireless configuration */
+        response_t wifi_security;
 	char *wepkey;
 	char *essid;
 

@@ -139,9 +139,9 @@ void nm_write_configuration(struct nm_config_info nmconf);
 
 
 #ifdef WIRELESS
-void nm_get_wireless_connection(nm_connection *connection);
-void nm_get_wireless_specific_options(nm_wireless *wireless);
-void nm_get_wireless_security(nm_wireless_security *wireless_security);
+void nm_get_wireless_connection(struct netcfg_interface *niface, nm_connection *connection);
+void nm_get_wireless_specific_options(struct netcfg_interface *niface, nm_wireless *wireless);
+void nm_get_wireless_security(struct netcfg_interface *niface, nm_wireless_security *wireless_security);
 #endif
 void nm_get_wired_connection(nm_connection *connection);
 void nm_get_mac_address(char *interface, char *mac_addr);

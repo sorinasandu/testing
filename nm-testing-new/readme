@@ -2,3 +2,5 @@
 Issues discovered while changing:
 - how should the unknown value for dhcp field in struct network_interface
 - defines for the same constants
+- wireless is secured, how to determine (save the response to struct
+  network_interfaces)
