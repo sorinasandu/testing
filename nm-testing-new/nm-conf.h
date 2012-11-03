@@ -109,6 +109,7 @@ typedef struct nm_ipv6
 {
     int                     used;   /* 1 = true, 0 = false */
     enum {AUTO6, IGNORE}    method;
+    // TODO: actually have IPV6 config
 }   nm_ipv6;
 
 

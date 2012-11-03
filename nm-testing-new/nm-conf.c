@@ -123,6 +123,10 @@ void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4)
 
 void nm_write_ipv6(FILE *config_file, nm_ipv6 ipv6)
 {
+    if (ipv6.used == 0) {
+        return
+    }
+
     fprintf(config_file, "\n%s\n", NM_SETTINGS_IPV6);
 
     if (ipv6.method == IGNORE) {
@@ -321,6 +325,12 @@ void nm_get_ipv4(struct netcfg_interface *niface, nm_ipv4 *ipv4)
 /* For the moment, just set it to ignore. */
 void nm_get_ipv6(struct netcfg_interface *niface, nm_ipv6 *ipv6)
 {
+    if (niface->address_family != AF_INET6) {
+        ipv6->used = 0;
+        return;
+    }
+
+    ipv6->used = 1;
     ipv6->method = IGNORE;
 }
 
