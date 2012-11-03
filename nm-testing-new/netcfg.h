@@ -89,7 +89,7 @@ extern wifimode_t mode;
 /* The information required to configure a network interface. */
 struct netcfg_interface {
 	char *name;
-	
+
 	/* Is this a loopback interface?
 	 * -1 if unknown, 0 if no, 1 if yes */
 	int loopback;
@@ -97,7 +97,7 @@ struct netcfg_interface {
 	/* Was this interface configured with DHCP?
 	 * -1 if unknown, 0 if no, 1 if yes */
 	int dhcp;
-	
+
 	/* Was this interface configured using stateful DHCPv6?
 	 */
 	int dhcpv6;
@@ -108,17 +108,17 @@ struct netcfg_interface {
 	/* Did the interface get an IPv6 address/gateway via SLAAC?
 	 * T (1) / F (0) / unknown (-1) */
 	int slaac;
-	
+
 	/* Did the RA indicate that we should use stateful address
 	 * configuration?  T/F/?
 	 */
 	int v6_stateful_config;
-	
+
 	/* Did the RA indicate that we should use stateless auxiliary
 	 * config (DNS, NTP, etc)?  T/F/?
 	 */
 	int v6_stateless_config;
-	
+
 	/* The list of nameservers this interface has asked us to
 	 * use.
 	 */
@@ -134,7 +134,7 @@ struct netcfg_interface {
 	 * us a/the right lease.
 	 */
 	char dhcp_hostname[MAXHOSTNAMELEN];
-	
+
 	char ipaddress[NETCFG_ADDRSTRLEN];
 	unsigned int masklen;
 	char gateway[NETCFG_ADDRSTRLEN];

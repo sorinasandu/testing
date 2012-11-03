@@ -5,6 +5,7 @@
  * connection :) */
 #include "netcfg.h"
 
+#define WIRELESS
 
 extern char *interface;
 extern int wfd;

@@ -31,12 +31,13 @@
 #define NM_MAX_LEN_WEP_KEY      30   /* Rough estimation (should be 26) */
 #define NM_MAX_LEN_PATH         128  /* Assume a path won't be longer */
 #define NM_MAX_LEN_UUID         40
-#define NM_MAX_COUNT_DNS        4
+#define NM_MAX_COUNT_DNS        NETCFG_NAMESERVERS_MAX
 #define NM_NO_BITS_IPV4         32
 
 
 /* Some Network Manager default values for connection types. */
 #define NM_DEFAULT_WIRED                "802-3-ethernet"
+#define NM_DEFAULT_WIRED_NAME           "Wired connection 1"
 #define NM_DEFAULT_WIRELESS             "802-11-wireless"
 #define NM_DEFAULT_WIRELESS_SECURITY    "802-11-wireless-security"
 #define NM_DEFAULT_PATH_FOR_MAC         "/sys/class/net/%s/address"
@@ -96,16 +97,18 @@ typedef struct nm_wireless_security
 
 typedef struct nm_ipv4
 {
+    int                     used;   /* 1 = true, 0 = false */
     enum {AUTO, MANUAL}     method;
-    struct in_addr          ip_address;
-    struct in_addr          gateway;
-    struct in_addr          netmask;
-    struct in_addr          nameserver_array[NM_MAX_COUNT_DNS];
+    char *                  ip_address;
+    char *                  gateway;
+    char *                  nameservers[NM_MAX_COUNT_DNS];
+    unsigned int            masklen;
 }   nm_ipv4;
 
 typedef struct nm_ipv6
 {
-    enum {AUTO6, IGNORE} method;
+    int                     used;   /* 1 = true, 0 = false */
+    enum {AUTO6, IGNORE}    method;
 }   nm_ipv6;
 
 
@@ -132,7 +135,7 @@ void nm_write_wired_specific_options(FILE *config_file, nm_wired wired);
 void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4);
 void nm_write_ipv6(FILE *config_file, nm_ipv6 ipv6);
 
-void nm_write_config_file(struct nm_config_info nmconf);
+void nm_write_configuration(struct nm_config_info nmconf);
 
 
 #ifdef WIRELESS
@@ -141,20 +144,17 @@ void nm_get_wireless_specific_options(nm_wireless *wireless);
 void nm_get_wireless_security(nm_wireless_security *wireless_security);
 #endif
 void nm_get_wired_connection(nm_connection *connection);
-void nm_get_mac_address(char *mac_addr);
-void nm_get_wired_specific_options(nm_wired *wired);
-void nm_get_ipv4(nm_ipv4 *ipv4);
-void nm_get_ipv6(nm_ipv6 *ipv6);
+void nm_get_mac_address(char *interface, char *mac_addr);
+void nm_get_wired_specific_options(struct netcfg_interface *niface, nm_wired *wired);
+void nm_get_ipv4(struct netcfg_interface *niface, nm_ipv4 *ipv4);
+void nm_get_ipv6(struct netcfg_interface *niface, nm_ipv6 *ipv6);
 
 #ifdef WIRELESS
-void nm_get_wireless_config(struct nm_config_info *nmconf);
+void nm_get_wireless_config(struct netcfg_interface *niface, struct nm_config_info *nmconf);
 #endif
-void nm_get_wired_config(struct nm_config_info *nmconf);
+void nm_get_wired_config(struct netcfg_interface *niface, struct nm_config_info *nmconf);
 
-void nm_get_configuration(struct nm_config_info *nmconf);
-
-/* Helpers: */
-int nm_count_one_bits(struct in_addr address);
+void nm_get_configuration(struct netcfg_interface *niface, struct nm_config_info *nmconf);
 
 #endif
 

@@ -1,24 +1,7 @@
 
-// TODO: remove //
+// TODO: remove "//" comments
 
 #include "nm-conf.h"
-
-/* Helpers. */
-
-int nm_count_one_bits(struct in_addr address)
-{
-    int         i, bit_count = 0;
-    uint32_t    mask = 1;
-
-    for (i = 0; i < NM_NO_BITS_IPV4; i++) {
-        if (address.s_addr & mask) {
-            bit_count ++;
-        }
-        mask = mask << 1;
-    }
-
-    return bit_count;
-}
 
 
 /* Functions for printing informations in Network Manager format. */
@@ -82,6 +65,11 @@ void nm_write_wireless_security(FILE *config_file, nm_wireless_security
 
 void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4)
 {
+    /* Don't write ipv4 settings if ipv4 wasn't used. */
+    if (ipv4.used == 0) {
+        return;
+    }
+
     fprintf(config_file, "\n%s\n", NM_SETTINGS_IPV4);
 
     if (ipv4.method == AUTO) {
@@ -96,10 +84,8 @@ void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4)
         /* Get DNS in printable format. */
         memset(buffer, 0, NM_MAX_LEN_BUF);
 
-        for (i = 0; ipv4.nameserver_array[i].s_addr; i++) {
-            inet_ntop(AF_INET, &(ipv4.nameserver_array[i]),
-                      addr, INET_ADDRSTRLEN);
-            strcat(buffer, addr);
+        for (i = 0; !empty_str(ipv4.nameservers[i]); i++) {
+            strcat(buffer, ipv4.nameservers[i]);
             strcat(buffer, ";");
         }
 
@@ -111,18 +97,18 @@ void nm_write_ipv4(FILE *config_file, nm_ipv4 ipv4)
         memset(buffer, 0, NM_MAX_LEN_BUF);
 
         /* Write IP address to the buffer. */
-        inet_ntop(AF_INET, &(ipv4.ip_address), addr, INET_ADDRSTRLEN);
-        strcat(buffer, addr);
+        strcat(buffer, ipv4.ip_address);
         strcat(buffer, ";");
 
         /* Write netmask to the buffer. */
-        sprintf(addr, "%d", nm_count_one_bits(ipv4.netmask));
+        sprintf(addr, "%d", ipv4.masklen);
         strcat(buffer, addr);
         strcat(buffer, ";");
 
         /* Write gateway address to the buffer. */
-        if (ipv4.gateway.s_addr) {
-            inet_ntop(AF_INET, &(gateway), addr, INET_ADDRSTRLEN);
+        memset(addr, 0, NM_MAX_LEN_IPV4);
+        if (!empty_str(ipv4.gateway)) {
+            strncpy(addr, ipv4.gateway, NM_MAX_LEN_IPV4 - 1);
         }
         else {
             strcpy(addr, "0");
@@ -145,7 +131,7 @@ void nm_write_ipv6(FILE *config_file, nm_ipv6 ipv6)
 }
 
 /* Write Network Manager config file. */
-void nm_write_config_file(struct nm_config_info nmconf)
+void nm_write_configuration(struct nm_config_info nmconf)
 {
     FILE    *config_file;
     char    buffer[NM_MAX_LEN_BUF];
@@ -163,12 +149,14 @@ void nm_write_config_file(struct nm_config_info nmconf)
 
     /* Open file using its full path. */
     sprintf(buffer, "%s/%s", NM_CONFIG_FILE_PATH, nmconf.connection.id);
-    config_file = fopen(buffer, "w");
+//    config_file = fopen(buffer, "w");
+    config_file = fopen(nmconf.connection.id, "w");
 
     if (config_file == NULL) {
 //        di_info("Unable to open file for writting configurations, "
 //                "connection id might not be set or set to unproper "
 //                "value. Current value: %s\n", nmconf.connection.id);
+        printf("Unable to open file\n");
         return;
     }
 
@@ -218,7 +206,7 @@ void nm_get_wired_connection(nm_connection *connection)
     uuid_t uuid;
 
     /* This is the first wired connection. */
-    snprintf(connection->id, NM_MAX_LEN_ID, "Wired connection 1");
+    snprintf(connection->id, NM_MAX_LEN_ID, NM_DEFAULT_WIRED_NAME);
 
     /* Generate uuid. */
     uuid_generate(uuid);
@@ -228,7 +216,7 @@ void nm_get_wired_connection(nm_connection *connection)
 }
 
 /* Get MAC address from default file. */
-void nm_get_mac_address(char *mac_addr)
+void nm_get_mac_address(char *interface, char *mac_addr)
 {
     char    file_name[NM_MAX_LEN_PATH];
     FILE    *file;
@@ -256,7 +244,7 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
 {
     strncpy(wireless->ssid, essid, NM_MAX_LEN_SSID);
 
-    nm_get_mac_address(wireless->mac_addr);
+    nm_get_mac_address(interface, wireless->mac_addr);
 
     /* Decide mode. */
     if (mode == ADHOC) {
@@ -278,9 +266,9 @@ void nm_get_wireless_specific_options(nm_wireless *wireless)
 #endif
 
 /* Only set MAC address, the others have good defaults in NM. */
-void nm_get_wired_specific_options(nm_wired *wired)
+void nm_get_wired_specific_options(struct netcfg_interface *niface, nm_wired *wired)
 {
-    nm_get_mac_address(wired->mac_addr);
+    nm_get_mac_address(niface->name, wired->mac_addr);
 }
 
 /* Security type for wireless networks. */
@@ -304,27 +292,33 @@ void nm_get_wireless_security(nm_wireless_security *wireless_security)
 #endif
 
 /* Save IPv4 settings. */
-void nm_get_ipv4(nm_ipv4 *ipv4)
+void nm_get_ipv4(struct netcfg_interface *niface, nm_ipv4 *ipv4)
 {
-    if (netcfg_method == STATIC) {
+    if (niface->address_family != AF_INET) {
+        ipv4->used = 0;
+        return;
+    }
+
+    ipv4->used = 1;
+    if (niface->dhcp == 1) {
+        ipv4->method = AUTO;
+    }
+    else {
         int i;
 
         ipv4->method = MANUAL;
-        ipv4->ip_address = ipaddress;
-        ipv4->gateway = gateway;
-        ipv4->netmask = netmask;
+        ipv4->ip_address = niface->ipaddress;
+        ipv4->gateway = niface->gateway;
+        ipv4->masklen = niface->masklen;
 
         for (i = 0; i < NM_MAX_COUNT_DNS; i++) {
-            ipv4->nameserver_array[i] = nameserver_array[i];
+            ipv4->nameservers[i] = niface->nameservers[i];
         }
-    }
-    else {
-        ipv4->method = AUTO;
     }
 }
 
 /* For the moment, just set it to ignore. */
-void nm_get_ipv6(nm_ipv6 *ipv6)
+void nm_get_ipv6(struct netcfg_interface *niface, nm_ipv6 *ipv6)
 {
     ipv6->method = IGNORE;
 }
@@ -332,7 +326,7 @@ void nm_get_ipv6(nm_ipv6 *ipv6)
 /* Extract all configs for a wireless interface, from both global netcfg
  * values and other resources. */
 #ifdef WIRELESS
-void nm_get_wireless_config(struct nm_config_info *nmconf)
+void nm_get_wireless_config(struct netcfg_interface *niface, struct nm_config_info *nmconf)
 {
     nm_get_wireless_connection(&(nmconf->connection));
     nm_get_wireless_specific_options(&(nmconf->wireless));
@@ -341,30 +335,30 @@ void nm_get_wireless_config(struct nm_config_info *nmconf)
         nm_get_wireless_security(&(nmconf->wireless_security));
     }
 
-    nm_get_ipv4(&(nmconf->ipv4));
-    nm_get_ipv6(&(nmconf->ipv6));
+    nm_get_ipv4(niface, &(nmconf->ipv4));
+    nm_get_ipv6(niface, &(nmconf->ipv6));
 }
 #endif
 
 /* Extract all configs for a wired interface. */
-void nm_get_wired_config(struct nm_config_info *nmconf)
+void nm_get_wired_config(struct netcfg_interface *niface, struct nm_config_info *nmconf)
 {
     nm_get_wired_connection(&(nmconf->connection));
-    nm_get_wired_specific_options(&(nmconf->wired));
-    nm_get_ipv4(&(nmconf->ipv4));
-    nm_get_ipv6(&(nmconf->ipv6));
+    nm_get_wired_specific_options(niface, &(nmconf->wired));
+    nm_get_ipv4(niface, &(nmconf->ipv4));
+    nm_get_ipv6(niface, &(nmconf->ipv6));
 }
 
 /* Getting configurations for NM relies on netcfrg global variables. */
-void nm_get_configuration(struct nm_config_info *nmconf)
+void nm_get_configuration(struct netcfg_interface *niface, struct nm_config_info *nmconf)
 {
     /* Decide if wireless configuration is needed. */
-    if (!is_wireless_iface(interface)) {
-        nm_get_wired_config(nmconf);
+    if (!is_wireless_iface(niface->name)) {
+        nm_get_wired_config(niface, nmconf);
     }
 #ifdef WIRELESS
     else {
-        nm_get_wireless_config(nmconf);
+        nm_get_wireless_config(niface, nmconf);
     }
 #endif
 }
